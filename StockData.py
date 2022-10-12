@@ -15,20 +15,20 @@ import requests
 """
 class StockData:
     def __init__(self, stock_symbol: str, requested_function: int):
-        self.API_KEY = "EYRT2L2R3HI4L78O"
-        self.stock_symbol = stock_symbol
+        self.__API_KEY = "EYRT2L2R3HI4L78O"
+        self.__stock_symbol = stock_symbol
 
         if requested_function == 1:
-            self.requested_function = "INTRADAY"
+            self.__requested_function = "INTRADAY"
         elif requested_function == 2:
-            self.requested_function = "DAILY"
+            self.__requested_function = "DAILY"
         elif requested_function == 3:
-            self.requested_function = "WEEKLY"
+            self.__requested_function = "WEEKLY"
         else:
-            self.requested_function = "MONTHLY"
+            self.__requested_function = "MONTHLY"
 
-        self.URL = f"https://www.alphavantage.co/query?function=TIME_SERIES_{self.requested_function}&symbol={self.stock_symbol}&apikey={self.API_KEY}"
+        self.__URL = f"https://www.alphavantage.co/query?function=TIME_SERIES_{self.__requested_function}&symbol={self.__stock_symbol}&apikey={self.__API_KEY}"
 
     def get_data(self):
-        get_request = requests.get(self.URL)
+        get_request = requests.get(self.__URL)
         self.data_dictionary = get_request.json()
