@@ -27,7 +27,8 @@ class StockData:
         else:
             self.requested_function = "MONTHLY"
 
-    def get_data(self):
         self.URL = f"https://www.alphavantage.co/query?function=TIME_SERIES_{self.requested_function}&symbol={self.stock_symbol}&apikey={self.API_KEY}"
+
+    def get_data(self):
         get_request = requests.get(self.URL)
         self.data_dictionary = get_request.json()
