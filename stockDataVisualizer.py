@@ -13,6 +13,8 @@ def main():
     user_data = UserData();
     stock_data = StockData(user_data.stock_symbol, user_data.requested_function)
     data_dictionary = stock_data.get_data()
-    print(data_dictionary)
+
+    for key, value in data_dictionary.items():
+        print(key, value)
 
 main()
