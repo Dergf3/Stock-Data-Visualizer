@@ -31,4 +31,4 @@ class StockData:
 
     def get_data(self):
         get_request = requests.get(self.__URL)
-        self.data_dictionary = get_request.json()
+        return get_request.json()

@@ -12,7 +12,7 @@ class UserData:
 def main():
     user_data = UserData();
     stock_data = StockData(user_data.stock_symbol, user_data.requested_function)
-    stock_data.get_data()
-    print(stock_data.data_dictionary)
+    data_dictionary = stock_data.get_data()
+    print(data_dictionary)
 
 main()
