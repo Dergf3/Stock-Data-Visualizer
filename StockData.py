@@ -16,7 +16,9 @@ import requests
 class StockData:
     def __init__(self, stock_symbol: str, requested_function: int):
         self.__API_KEY = "EYRT2L2R3HI4L78O"
+        self.__URL = "https://www.alphavantage.co/query"
         self.__stock_symbol = stock_symbol
+        self.__params_dictionary = {"symbol" : self.__stock_symbol, "apikey" : self.__API_KEY}
         self.__interval = "5min" # Do we allow the user to set this? This wasn't in the video or requirements. Allowed values are: 1min, 5min, 15min, 30min, 60min
 
         # Set requested function with respective string value
@@ -33,13 +35,24 @@ class StockData:
             self.__requested_function = "MONTHLY"
             self.__key_name = "Monthly Time Series"
 
-        # Set url based on requested function
+        # Set url parameters based on requested function
+        self.__params_dictionary.update({"function" : f"TIME_SERIES_{self.__requested_function}"})
         if self.__requested_function == "INTRADAY":
-            self.__URL = f"https://www.alphavantage.co/query?function=TIME_SERIES_{self.__requested_function}&symbol={self.__stock_symbol}&interval={self.__interval}&apikey={self.__API_KEY}"
-        else:
-            self.__URL = f"https://www.alphavantage.co/query?function=TIME_SERIES_{self.__requested_function}&symbol={self.__stock_symbol}&apikey={self.__API_KEY}"
+            self.__params_dictionary.update({"interval" : self.__interval})
 
     def get_data(self):
-        get_request = requests.get(self.__URL)
-        data_dictionary = get_request.json()
-        return data_dictionary[self.__key_name]
+        try:
+            api_response = requests.get(self.__URL, params=self.__params_dictionary)
+        except:
+            raise Exception("The API is currently unavailable.  Please try again later.  If the problem persists, please contact your system administrator.")
+        else:
+            if api_response.ok:
+                if 'Error Message' in api_response.text:
+                    response_dictionary = api_response.json()
+                    error_msg = response_dictionary.get('Error Message')
+                    raise Exception(error_msg)
+                else:
+                    data_dictionary = api_response.json()
+                    return data_dictionary.get(self.__key_name)
+            else:
+                raise Exception(f"The API responded with status code \"{api_response.status_code}.\"")

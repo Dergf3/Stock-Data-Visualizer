@@ -12,9 +12,12 @@ class UserData:
 def main():
     user_data = UserData();
     stock_data = StockData(user_data.stock_symbol, user_data.requested_function)
-    data_dictionary = stock_data.get_data()
-
-    for key, value in data_dictionary.items():
-        print(key, value)
+    try:
+        data_dictionary = stock_data.get_data()
+    except Exception as ex:
+        print(f"💥ERROR:  {ex}💥")
+    else:
+        for key, value in data_dictionary.items():
+            print(key, value)
 
 main()
