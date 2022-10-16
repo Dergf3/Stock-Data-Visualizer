@@ -16,13 +16,12 @@ def main():
     print("\nStock Data Visualizer")
     print("-----------------------")
     user_data = UserData()
-    stock_data = StockData(user_data.stock_symbol, user_data.requested_function)
     try:
-        data_dictionary = stock_data.get_data(user_data.start_date, user_data.end_date)
+        stock_data = StockData(user_data.stock_symbol, user_data.requested_function, user_data.start_date, user_data.end_date)
     except Exception as ex:
         print(f"💥ERROR:  {ex}💥")
     else:
-        for key, value in data_dictionary.items():
+        for key, value in stock_data.data_dictionary.items():
             print(key, value)
 
 main()

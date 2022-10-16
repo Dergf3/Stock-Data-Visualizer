@@ -13,20 +13,23 @@ from datetime import datetime
 
 """
     Use: 
-         stock_data = StockData(user_data.stock_symbol, user_data.requested_function)
          try:
-            stock_data_dictionary = stock_data.get_data(user_data.start_date, user_data.end_date)
+            stock_data = StockData(user_data.stock_symbol, user_data.requested_function, user_data.start_date, user_data.end_date)
          except Exception as ex:
             print(f"💥ERROR:  {ex}💥")
          else:
-            for key, value in data_dictionary.items():
+            for key, value in stock_data.data_dictionary.items():
                 print(key, value)
 """
 class StockData:
-    def __init__(self, stock_symbol: str, requested_function: int):
+    def __init__(self, stock_symbol: str, requested_function: int, user_start_date: str, user_end_date: str):
         self.__API_KEY = "EYRT2L2R3HI4L78O"
         self.__URL = "https://www.alphavantage.co/query"
         self.__stock_symbol = stock_symbol
+        self.__start_date = self.__get_date(user_start_date)
+        self.__end_date = self.__get_date(user_end_date)
+        if self.__start_date >= self.__end_date:
+            raise Exception("The end date must be greater than the start date.")
         self.__params_dictionary = {"symbol" : self.__stock_symbol, "apikey" : self.__API_KEY}
         self.__interval = "5min" # Do we allow the user to set this? This wasn't in the video or requirements. Allowed values are: 1min, 5min, 15min, 30min, 60min
 
@@ -49,7 +52,9 @@ class StockData:
         if self.__requested_function == "INTRADAY":
             self.__params_dictionary.update({"interval" : self.__interval})
 
-    def get_data(self, user_start_date: str, user_end_date: str):
+        self.data_dictionary = self.__get_data()
+
+    def __get_data(self):
         data_dictionary = {}
         try:
             api_response = requests.get(self.__URL, params=self.__params_dictionary)
@@ -64,7 +69,7 @@ class StockData:
                     self.__handle_API_response_errors(api_response)
                 else:
                     try:
-                        data_dictionary = self.__filter_API_response(api_response, user_start_date, user_end_date)
+                        data_dictionary = self.__filter_API_response(api_response)
                     except Exception as ex:
                         raise Exception(ex)
             else:
@@ -81,7 +86,7 @@ class StockData:
             if error_msg != None:
                 raise Exception(error_msg)
 
-    def __filter_API_response(self, api_response, user_start_date: str, user_end_date: str):
+    def __filter_API_response(self, api_response):
         filtered_dictionary = {}
         # Gets a dictionary with a date string (format:  YYYY-MM-DD) as the key 
         # and dictionary as the value based off of the selected function
@@ -92,25 +97,19 @@ class StockData:
 
         data_dictionary = response_dictionary.get(self.__key_name)
         if data_dictionary != None:
-            # Convert to dates for comparison.  This may be risky since it assumes the user's
-            # dates have already been verified to be valid and in the correct format.
-            try:
-                start_date = datetime.strptime(user_start_date, "%Y-%m-%d")
-            except ValueError:
-                raise Exception(f"{user_start_date} is an invalid date.")
-
-            try:
-                end_date = datetime.strptime(user_end_date, "%Y-%m-%d")
-            except ValueError:
-                raise Exception(f"{user_end_date} is an invalid date.")
-            
             for key, value in data_dictionary.items():
                 # Convert keys to dates for comparison
                 retrieved_date = datetime.strptime(key, "%Y-%m-%d")
-                if retrieved_date >= start_date and retrieved_date <= end_date:
+                if retrieved_date >= self.__start_date and retrieved_date <= self.__end_date:
                     filtered_dictionary.update({key : value})
-        
         else:
             raise Exception("The API keys used for filtering have changed.  Please notify your system administrator to correct this issue.")
-        
         return filtered_dictionary
+
+    def __get_date(self, date_str: str):
+        try:
+            date = datetime.strptime(date_str, "%Y-%m-%d")
+        except ValueError:
+            raise Exception(f"{date_str} is an invalid date.")
+        else:
+            return date
