@@ -7,8 +7,8 @@ class UserData:
     def __init__(self):
         self.stock_symbol = "GOOGL"
         self.chart_type = 2
-        self.requested_function = 1
-        self.start_date = "2022-10-01"
+        self.requested_function = 2
+        self.start_date = "2022-10-06"
         self.end_date = "2022-10-06"
 
 

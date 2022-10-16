@@ -28,10 +28,8 @@ class StockData:
         self.__stock_symbol = stock_symbol
         self.__start_date = self.__get_date(user_start_date)
         self.__end_date = self.__get_date(user_end_date)
-        if requested_function != 1 and self.__start_date >= self.__end_date:
+        if requested_function != 1 and self.__start_date > self.__end_date:
             raise Exception("The end date must be greater than or equal to the start date.")
-        elif requested_function == 1 and self.__start_date > self.__end_date:
-            raise Exception("The end date must be greater than the start date.")
         self.__params_dictionary = {"symbol" : self.__stock_symbol, "apikey" : self.__API_KEY}
         self.__interval = "5min" # Do we allow the user to set this? This wasn't in the video or requirements. Allowed values are: 1min, 5min, 15min, 30min, 60min
 
