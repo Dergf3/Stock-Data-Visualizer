@@ -1,4 +1,6 @@
 import requests
+from json import JSONDecodeError
+from datetime import datetime
 
 # Assumption of the user object
 # class UserData:
@@ -40,19 +42,68 @@ class StockData:
         if self.__requested_function == "INTRADAY":
             self.__params_dictionary.update({"interval" : self.__interval})
 
-    def get_data(self):
+    def get_data(self, user_start_date: str, user_end_date: str):
+        data_dictionary = {}
         try:
             api_response = requests.get(self.__URL, params=self.__params_dictionary)
         except:
             raise Exception("The API is currently unavailable.  Please try again later.  If the problem persists, please contact your system administrator.")
         else:
             if api_response.ok:
+                # The API sends a 200 OK response even if there are errors.  If there are errors,
+                # it will return them in the response text.  Filter them out by converting the response
+                # to a python dictionary and retrieving the "Error Message" key.
                 if 'Error Message' in api_response.text:
-                    response_dictionary = api_response.json()
-                    error_msg = response_dictionary.get('Error Message')
-                    raise Exception(error_msg)
+                    self.__handle_API_response_errors(api_response)
                 else:
-                    data_dictionary = api_response.json()
-                    return data_dictionary.get(self.__key_name)
+                    try:
+                        data_dictionary = self.__filter_API_response(api_response, user_start_date, user_end_date)
+                    except Exception as ex:
+                        raise Exception(ex)
             else:
                 raise Exception(f"The API responded with status code \"{api_response.status_code}.\"")
+        return data_dictionary
+
+    def __handle_API_response_errors(self, api_response):
+        try:
+            response_dictionary = api_response.json()
+        except JSONDecodeError:
+            raise Exception("JSON decoding error")
+        else:
+            error_msg = response_dictionary.get('Error Message')
+            if error_msg != None:
+                raise Exception(error_msg)
+
+    def __filter_API_response(self, api_response, user_start_date: str, user_end_date: str):
+        filtered_dictionary = {}
+        # Gets a dictionary with a date string (format:  YYYY-MM-DD) as the key 
+        # and dictionary as the value based off of the selected function
+        try:            
+            response_dictionary = api_response.json()
+        except JSONDecodeError:
+            raise Exception("JSON decoding error")
+
+        data_dictionary = response_dictionary.get(self.__key_name)
+        if data_dictionary != None:
+            # Convert to dates for comparison.  This may be risky since it assumes the user's
+            # dates have already been verified to be valid and in the correct format.
+            try:
+                start_date = datetime.strptime(user_start_date, "%Y-%m-%d")
+            except ValueError:
+                raise Exception(f"{user_start_date} is an invalid date.")
+
+            try:
+                end_date = datetime.strptime(user_end_date, "%Y-%m-%d")
+            except ValueError:
+                raise Exception(f"{user_end_date} is an invalid date.")
+            
+            for key, value in data_dictionary.items():
+                # Convert keys to dates for comparison
+                retrieved_date = datetime.strptime(key, "%Y-%m-%d")
+                if retrieved_date >= start_date and retrieved_date <= end_date:
+                    filtered_dictionary.update({key : value})
+        
+        else:
+            raise Exception("The API keys used for filtering have changed.  Please notify your system administrator to correct this issue.")
+        
+        return filtered_dictionary
