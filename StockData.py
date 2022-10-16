@@ -17,7 +17,7 @@ from datetime import datetime
             stock_data = StockData(user_data.stock_symbol, user_data.requested_function, user_data.start_date, user_data.end_date)
          except Exception as ex:
             print(f"💥ERROR:  {ex}💥")
-         else:
+        else:
             for key, value in stock_data.data_dictionary.items():
                 print(key, value)
 """
@@ -28,7 +28,9 @@ class StockData:
         self.__stock_symbol = stock_symbol
         self.__start_date = self.__get_date(user_start_date)
         self.__end_date = self.__get_date(user_end_date)
-        if self.__start_date >= self.__end_date:
+        if requested_function != 1 and self.__start_date >= self.__end_date:
+            raise Exception("The end date must be greater than or equal to the start date.")
+        elif requested_function == 1 and self.__start_date > self.__end_date:
             raise Exception("The end date must be greater than the start date.")
         self.__params_dictionary = {"symbol" : self.__stock_symbol, "apikey" : self.__API_KEY}
         self.__interval = "5min" # Do we allow the user to set this? This wasn't in the video or requirements. Allowed values are: 1min, 5min, 15min, 30min, 60min
@@ -99,8 +101,11 @@ class StockData:
         if data_dictionary != None:
             for key, value in data_dictionary.items():
                 # Convert keys to dates for comparison
-                retrieved_date = datetime.strptime(key, "%Y-%m-%d")
-                if retrieved_date >= self.__start_date and retrieved_date <= self.__end_date:
+                if self.__requested_function != "INTRADAY":
+                    retrieved_date = datetime.strptime(key, "%Y-%m-%d")
+                    if retrieved_date >= self.__start_date and retrieved_date <= self.__end_date:
+                        filtered_dictionary.update({key : value})
+                else:
                     filtered_dictionary.update({key : value})
         else:
             raise Exception("The API keys used for filtering have changed.  Please notify your system administrator to correct this issue.")

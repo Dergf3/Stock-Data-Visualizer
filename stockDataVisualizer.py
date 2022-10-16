@@ -7,9 +7,9 @@ class UserData:
     def __init__(self):
         self.stock_symbol = "GOOGL"
         self.chart_type = 2
-        self.requested_function = 2
+        self.requested_function = 1
         self.start_date = "2022-10-01"
-        self.end_date = "2022-10-04"
+        self.end_date = "2022-10-06"
 
 
 def main():
@@ -21,7 +21,10 @@ def main():
     except Exception as ex:
         print(f"💥ERROR:  {ex}💥")
     else:
-        for key, value in stock_data.data_dictionary.items():
-            print(key, value)
+        if not stock_data.data_dictionary.items():
+            print("There was no data for the time period specified.")
+        else:
+            for key, value in stock_data.data_dictionary.items():
+                print(key, value)
 
 main()
