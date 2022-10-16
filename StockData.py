@@ -12,8 +12,15 @@ from datetime import datetime
 #         self.end_date = "2022-09-30"
 
 """
-    Use: stock_data = StockData(user_data.stock_symbol, user_data.requested_function)
-         stock_data_dictionary = stock_data.get_data()
+    Use: 
+         stock_data = StockData(user_data.stock_symbol, user_data.requested_function)
+         try:
+            stock_data_dictionary = stock_data.get_data(user_data.start_date, user_data.end_date)
+         except Exception as ex:
+            print(f"💥ERROR:  {ex}💥")
+         else:
+            for key, value in data_dictionary.items():
+                print(key, value)
 """
 class StockData:
     def __init__(self, stock_symbol: str, requested_function: int):
