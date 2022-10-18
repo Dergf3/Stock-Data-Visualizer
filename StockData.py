@@ -25,13 +25,15 @@ class StockData:
     def __init__(self, stock_symbol: str, requested_function: int, user_start_date: str, user_end_date: str):
         self.__API_KEY = "EYRT2L2R3HI4L78O"
         self.__URL = "https://www.alphavantage.co/query"
+        self.__params_dictionary = {"apikey" : self.__API_KEY}
         self.__stock_symbol = stock_symbol
+        # self.__stock_symbol = self.__validate_stock_symbol(stock_symbol) # Can be used if we want to validate that they supplied a valid stock symbol
         self.__start_date = self.__get_date(user_start_date)
         self.__end_date = self.__get_date(user_end_date)
+        self.__interval = "5min" # Do we allow the user to set this? This wasn't in the video or requirements. Allowed values are: 1min, 5min, 15min, 30min, 60min
+
         if requested_function != 1 and self.__start_date > self.__end_date:
             raise Exception("The end date must be greater than or equal to the start date.")
-        self.__params_dictionary = {"symbol" : self.__stock_symbol, "apikey" : self.__API_KEY}
-        self.__interval = "5min" # Do we allow the user to set this? This wasn't in the video or requirements. Allowed values are: 1min, 5min, 15min, 30min, 60min
 
         # Set requested function with respective string value
         if requested_function == 1:
@@ -48,12 +50,35 @@ class StockData:
             self.__key_name = "Monthly Time Series"
 
         # Set url parameters based on requested function
-        self.__params_dictionary.update({"function" : f"TIME_SERIES_{self.__requested_function}"})
+        self.__params_dictionary.update({"function" : f"TIME_SERIES_{self.__requested_function}", "symbol" : self.__stock_symbol})
         if self.__requested_function == "INTRADAY":
             self.__params_dictionary.update({"interval" : self.__interval})
 
         self.data_dictionary = self.__get_data()
 
+    def __validate_stock_symbol(self, stock_symbol: str):
+        try:
+            self.__params_dictionary.update({"function" : "SYMBOL_SEARCH", "keywords" : stock_symbol})
+            api_response = requests.get(self.__URL, params=self.__params_dictionary)
+        except:
+            raise Exception("The API is currently unavailable.  Please try again later.  If the problem persists, please contact your system administrator.")
+        else:
+            if api_response.ok:
+                if 'Error Message' in api_response.text:
+                    self.__handle_API_response_errors(api_response)
+                else:
+                    try:            
+                        response_dictionary = api_response.json()
+                    except JSONDecodeError:
+                        raise Exception("JSON decoding error")
+                    else:
+                        search_list = response_dictionary.get("bestMatches")
+                        for search_dictionary in search_list:
+                            if stock_symbol in search_dictionary.values():
+                                return stock_symbol
+                            else:
+                                raise Exception(f"{stock_symbol} is not a valid stock symbol.")
+    
     def __get_data(self):
         data_dictionary = {}
         try:
@@ -76,7 +101,7 @@ class StockData:
                 raise Exception(f"The API responded with status code \"{api_response.status_code}.\"")
         return data_dictionary
 
-    def __handle_API_response_errors(self, api_response):
+    def __handle_API_response_errors(self, api_response: requests.Response):
         try:
             response_dictionary = api_response.json()
         except JSONDecodeError:
@@ -86,7 +111,7 @@ class StockData:
             if error_msg != None:
                 raise Exception(error_msg)
 
-    def __filter_API_response(self, api_response):
+    def __filter_API_response(self, api_response: requests.Response):
         filtered_dictionary = {}
         # Gets a dictionary with a date string (format:  YYYY-MM-DD) as the key 
         # and dictionary as the value based off of the selected function
