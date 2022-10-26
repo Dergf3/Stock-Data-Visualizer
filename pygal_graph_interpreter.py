@@ -11,7 +11,7 @@ class Stocks:
         self._populate_chart_list()
 
 def __populate_chart_list(self):
-    for key, value in self.stock_data_dictionary.items():
+    for key, value in self.stock_data.data_dictionary.items():
         self.date_list.append(key)
         for keyTwo, valueTwo in value.items():
             if 'open' in keyTwo:
