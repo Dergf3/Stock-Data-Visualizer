@@ -4,7 +4,7 @@ def chart(self):
         chart = pygal.Bar(x_label_rotation=45)
     else:
         chart = pygal.Line(x_label_rotation=45)
-    chart.title =title=f"Stock data for {self.user_data.stock_symbol} stocks for {self.user_data.start_date} to {self.user_data.end_date}"
+    chart.title =f"Stock data for {self.user_data.stock_symbol} stocks for {self.user_data.start_date} to {self.user_data.end_date}"
     self.date_list.reverse()
     chart.x_labels = self.date_list
     chart.add("Open", self.open_list)
