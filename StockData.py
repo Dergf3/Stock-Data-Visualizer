@@ -2,25 +2,6 @@ import requests
 from json import JSONDecodeError
 from datetime import datetime
 
-# Assumption of the user object
-# class UserData:
-#     def __init__(self):
-#         self.stock_symbol = "IBM"
-#         self.chart_type = 1
-#         self.requested_function = 2
-#         self.start_date = "2022-09-01"
-#         self.end_date = "2022-09-30"
-
-"""
-    Use: 
-         try:
-            stock_data = StockData(user_data.stock_symbol, user_data.requested_function, user_data.start_date, user_data.end_date)
-         except Exception as ex:
-            print(f"💥ERROR:  {ex}💥")
-        else:
-            for key, value in stock_data.data_dictionary.items():
-                print(key, value)
-"""
 class StockData:
     def __init__(self, stock_symbol: str, requested_function: int, user_start_date: str, user_end_date: str):
         self.__API_KEY = "EYRT2L2R3HI4L78O"
