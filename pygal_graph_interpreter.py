@@ -8,7 +8,7 @@ class Stocks:
         self.high_list = []
         self.low_list = []
         self.close_list = []
-        self._populate_chart_list()
+        self.__populate_chart_list()
         self.date_list = []
 
     def __populate_chart_list(self):
