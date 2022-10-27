@@ -10,6 +10,6 @@ def chart(self):
     chart.add("Open", self.open_list)
     chart.add("Close", self.close_list)
     chart.add("Low", self.low_list)
-    chart.add("High", self.hugh_list)
+    chart.add("High", self.high_list)
     chart.render_in_browser()
     
